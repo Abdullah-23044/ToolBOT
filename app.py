@@ -10,6 +10,19 @@ from datetime import datetime
 import re
 from html import escape
 
+from flask_httpauth import HTTPBasicAuth
+
+# --- Basic Auth Setup ---
+auth = HTTPBasicAuth()
+users = {
+    "yourusername": "yourpassword",  # Change these to your desired username and password
+}
+
+@auth.verify_password
+def verify_password(username, password):
+    if username in users and users[username] == password:
+        return username
+
 # --- Load environment variables from .env file ---
 load_dotenv()
 
@@ -111,15 +124,19 @@ def indent_subheadings(raw_text):
     return raw_text
 
 # --- Flask Routes ---
+
 @app.route('/')
 def home():
+    # Home is public — no auth required
     return render_template('front.html')
 
 @app.route('/chat_interface')
+@auth.login_required
 def chat_interface():
     return render_template('index.html')
 
 @app.route('/get_conversation/<user_id>', methods=['GET'])
+@auth.login_required
 def get_conversation(user_id):
     try:
         conversation = list(mongo.db.chats.find({'user_id': user_id}).sort('timestamp', 1))
@@ -131,6 +148,7 @@ def get_conversation(user_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/chat', methods=['POST'])
+@auth.login_required
 def chat():
     user_message = request.json.get('message')
     if not user_message:
@@ -151,6 +169,7 @@ def chat():
     return jsonify({'response': formatted})
 
 @app.route('/get_history', methods=['GET'])
+@auth.login_required
 def get_history():
     try:
         history = list(mongo.db.chats.find({'user_id': 'anonymous', 'sender': 'user'}).sort('timestamp', -1).limit(50))
