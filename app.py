@@ -9,13 +9,15 @@ from bson.objectid import ObjectId
 from datetime import datetime
 import re
 from html import escape
-
 from flask_httpauth import HTTPBasicAuth
+
+# --- Load environment variables from .env file ---
+load_dotenv()
 
 # --- Basic Auth Setup ---
 auth = HTTPBasicAuth()
 users = {
-    "yourusername": "yourpassword",  # Change these to your desired username and password
+    os.getenv("AUTH_USERNAME"): os.getenv("AUTH_PASSWORD")
 }
 
 @auth.verify_password
@@ -23,14 +25,11 @@ def verify_password(username, password):
     if username in users and users[username] == password:
         return username
 
-# --- Load environment variables from .env file ---
-load_dotenv()
-
 # --- Flask App Initialization ---
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-# --- MongoDB Configuration (no fallback to localhost for deployment) ---
+# --- MongoDB Configuration ---
 MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
     raise ValueError("❌ MONGO_URI not set in environment variables or .env")
@@ -124,11 +123,9 @@ def indent_subheadings(raw_text):
     return raw_text
 
 # --- Flask Routes ---
-
 @app.route('/')
 def home():
-    # Home is public — no auth required
-    return render_template('front.html')
+    return render_template('front.html')  # Public route
 
 @app.route('/chat_interface')
 @auth.login_required
@@ -182,5 +179,4 @@ def get_history():
 
 # ✅ Do NOT use app.run() in PythonAnywhere WSGI setup!
 if __name__ == '__main__':
-    # This will only run locally — not on PythonAnywhere
     app.run(debug=True)
