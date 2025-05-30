@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ToolBOT</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/logo.svg') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="start">
+                <img class="logo" src="{{ url_for('static', filename='assets/logo.svg') }}" alt="ToolBOT Logo" />
+                <h1 class="main-title-text">ToolBOT</h1>
+            </div>
+            <p class="main-tagline-text">Smarter Tool, Smarter Work</p>
+        </div>
+
+        <div id="dynamic-history-container" class="sidebar-history-scroll">
+            <h5>History</h5>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div id="initial-intro-section" class="initial-intro-section">
+            <div class="initial-logo-and-title">
+                <img class="logo" src="{{ url_for('static', filename='assets/logo.svg') }}" alt="ToolBOT Logo" />
+                <h1 class="initial-intro-title">Hi, I'm ToolBOT</h1>
+            </div>
+        </div>
+
+        <div id="chat-container" class="hidden">
+            <div id="chat-messages" class="chat-messages"></div>
+        </div>
+
+        <div class="chat-input">
+            <textarea id="user-message-input" placeholder="Message ToolBOT" rows="1" style="
+                    resize: none;
+                    width: 100%;
+                    min-height: 64px;
+                    overflow-y: hidden;
+                    border: none;
+                    background-color: transparent;
+                    color: var(--text-light-grey);
+                    font-size: 16px;
+                    outline: none;
+                    flex-grow: 1;
+                    padding: 5px 0;
+                    font-family: inherit;
+                "></textarea>
+            <div id="send-button" class="arrow">
+                <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M7 16c-.595 0-1.077-.462-1.077-1.032V1.032C5.923.462 6.405 0 7 0s1.077.462 1.077 1.032v13.936C8.077 15.538 7.595 16 7 16z"
+                        fill="currentColor"></path>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M.315 7.44a1.002 1.002 0 0 1 0-1.46L6.238.302a1.11 1.11 0 0 1 1.523 0c.421.403.421 1.057 0 1.46L1.838 7.44a1.11 1.11 0 0 1-1.523 0z"
+                        fill="currentColor"></path>
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M13.685 7.44a1.11 1.11 0 0 1-1.523 0L6.238 1.762a1.002 1.002 0 0 1 0-1.46 1.11 1.11 0 0 1 1.523 0l5.924 5.678c.42.403.42 1.056 0 1.46z"
+                        fill="currentColor"></path>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // DOM Elements
+            const input = document.getElementById("user-message-input");
+            const sendButton = document.getElementById("send-button");
+
+            const elements = {
+                initialIntro: document.getElementById("initial-intro-section"),
+                chatContainer: document.getElementById("chat-container"),
+                messageInput: input,
+                sendButton: sendButton,
+                chatMessages: document.getElementById("chat-messages"),
+                dynamicHistoryContainer: document.getElementById("dynamic-history-container"),
+            };
+
+            // State
+            let chatState = {
+                started: false,
+                thinking: false,
+            };
+
+            // Textarea auto-resize
+            input.addEventListener("input", function () {
+                this.style.height = "auto"; // reset height to auto before calculating
+                this.style.height = this.scrollHeight + "px";
+            });
+
+            // Send message on Enter (without Shift)
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault(); // prevent new line
+                    handleSend();
+                }
+            });
+
+            // Send message on clicking send button
+            sendButton.addEventListener("click", function () {
+                handleSend();
+            });
+
+            // Load chat history
+            async function loadChatHistory() {
+                try {
+                    const response = await fetch("/get_conversation/anonymous");
+                    const history = await response.json();
+                    elements.chatMessages.innerHTML = "";
+                    history.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                    history.forEach((item) => {
+                        const messageDiv = document.createElement("div");
+                        messageDiv.className = `message ${item.sender === "user" ? "user" : "gemini"
+                            }-message`;
+
+                        const contentDiv = document.createElement("div");
+                        contentDiv.className = "content";
+                        contentDiv.innerHTML = item.message;
+
+                        messageDiv.appendChild(contentDiv);
+                        elements.chatMessages.appendChild(messageDiv);
+                    });
+                    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+                } catch (error) {
+                    console.error("Error loading chat history:", error);
+                }
+            }
+
+            // Update sidebar history
+            async function updateSidebarHistory() {
+                try {
+                    const response = await fetch("/get_history");
+                    const history = await response.json();
+                    const container = elements.dynamicHistoryContainer;
+                    container.innerHTML = "";
+
+                    if (!history.length) {
+                        container.textContent = "No questions yet.";
+                        return;
+                    }
+
+                    // Group messages by date (Today/Yesterday/older)
+                    const grouped = {};
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(today.getDate() - 1);
+
+                    // Filter user messages only
+                    const userMessages = history.filter((item) => item.sender === "user");
+
+                    userMessages.forEach((item) => {
+                        const dateObj = new Date(item.timestamp);
+                        let dateHeader;
+
+                        if (dateObj.toDateString() === today.toDateString()) {
+                            dateHeader = "Today";
+                        } else if (dateObj.toDateString() === yesterday.toDateString()) {
+                            dateHeader = "Yesterday";
+                        } else {
+                            dateHeader = dateObj.toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "numeric",
+                                year: "numeric",
+                            });
+                        }
+
+                        if (!grouped[dateHeader]) grouped[dateHeader] = [];
+
+                        grouped[dateHeader].push(item.message);
+                    });
+
+                    // Render grouped messages
+                    Object.entries(grouped).forEach(([date, messages]) => {
+                        const dateHeaderEl = document.createElement("h3");
+                        dateHeaderEl.className = "history-header";
+                        dateHeaderEl.textContent = date;
+
+                        const messageListEl = document.createElement("div");
+                        messageListEl.className = "history-list";
+
+                        messages.forEach((msg) => {
+                            const itemEl = document.createElement("div");
+                            itemEl.className = "history-item";
+                            itemEl.textContent = `• ${msg}`;
+
+                            // Make history item clickable to load conversation from that message
+                            itemEl.addEventListener("click", () => {
+                                loadConversationFromMessage(msg);
+                            });
+
+                            messageListEl.appendChild(itemEl);
+                        });
+
+                        container.appendChild(dateHeaderEl);
+                        container.appendChild(messageListEl);
+                    });
+                } catch (error) {
+                    console.error("Error loading history:", error);
+                    elements.dynamicHistoryContainer.textContent = "Failed to load questions.";
+                }
+            }
+
+            // Load conversation starting from clicked message
+            async function loadConversationFromMessage(messageText) {
+                try {
+                    // Show chat container, hide intro
+                    elements.initialIntro.classList.add("hidden");
+                    elements.chatContainer.classList.remove("hidden");
+
+                    // Fetch full conversation history
+                    const response = await fetch("/get_conversation/anonymous");
+                    const history = await response.json();
+
+                    // Clear existing chat messages
+                    elements.chatMessages.innerHTML = "";
+
+                    // Sort by timestamp ascending
+                    history.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+                    // Find index of clicked message in history
+                    const startIndex = history.findIndex((item) => item.message === messageText);
+
+                    // Slice conversation from clicked message onward or show all if not found
+                    const conversationToShow =
+                        startIndex !== -1 ? history.slice(startIndex) : history;
+
+                    // Render conversation messages
+                    conversationToShow.forEach((item) => {
+                        const messageDiv = document.createElement("div");
+                        messageDiv.className = `message ${item.sender === "user" ? "user" : "gemini"}-message`;
+
+                        const contentDiv = document.createElement("div");
+                        contentDiv.className = "content";
+                        contentDiv.innerHTML = item.message;
+
+                        messageDiv.appendChild(contentDiv);
+                        elements.chatMessages.appendChild(messageDiv);
+                    });
+
+                    // Scroll to the **first** message (clicked message) instead of bottom
+                    const firstMessage = elements.chatMessages.querySelector(".message");
+                    if (firstMessage) {
+                        firstMessage.scrollIntoView({ behavior: "smooth", block: "start" });
+                        // Optional highlight for 2 seconds
+                        firstMessage.classList.add("highlighted");
+                        setTimeout(() => {
+                            firstMessage.classList.remove("highlighted");
+                        }, 2000);
+
+                    }
+
+                } catch (error) {
+                    console.error("Error loading conversation:", error);
+                }
+            }
+
+            // Handle sending a message
+            async function handleSend() {
+                const message = elements.messageInput.value.trim();
+                if (!message || chatState.thinking) return;
+
+                elements.initialIntro.classList.add("hidden");
+                elements.chatContainer.classList.remove("hidden");
+
+                chatState.started = true;
+                chatState.thinking = true;
+
+                const userMessageId = addMessage(Date.now(), message, "user");
+
+                elements.messageInput.value = "";
+                elements.messageInput.style.height = "40px";
+                elements.messageInput.focus();
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+                    });
+                });
+
+
+
+                const thinkingId = addMessage(Date.now() + 1, "", "thinking");
+
+                try {
+                    const response = await fetch("/chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message }),
+                    });
+
+                    const data = await response.json();
+                    removeMessage(thinkingId);
+
+                    if (data.status === "rate_limit" || data.status === "error") {
+                        addMessage(null, data.response, "status");
+                    } else {
+                        addMessage(null, data.response, "gemini");
+                    }
+
+                    setTimeout(() => {
+                        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+                    }, 100);
+
+                } catch (error) {
+                    removeMessage(thinkingId);
+                    addMessage(null, "Connection error. Please try again.", "status");
+                    console.error("Error:", error);
+
+                } finally {
+                    chatState.thinking = false;
+                    updateSidebarHistory();
+                }
+            }
+
+            // Add message to chat
+            function addMessage(id, content, type) {
+                const messageDiv = document.createElement("div");
+                messageDiv.className = `message ${type}-message`;
+                messageDiv.dataset.id = id || Date.now();
+
+                const contentDiv = document.createElement("div");
+                contentDiv.className = "content";
+
+                if (type === "thinking") {
+                    contentDiv.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+                } else {
+                    contentDiv.innerHTML = content;
+                }
+                messageDiv.appendChild(contentDiv);
+                elements.chatMessages.appendChild(messageDiv);
+
+                requestAnimationFrame(() => {
+                    // Scroll to bottom using an anchor element
+                    requestAnimationFrame(() => {
+                        let anchor = document.getElementById("scroll-anchor");
+                        if (anchor) anchor.remove(); // remove previous if exists
+
+                        anchor = document.createElement("div");
+                        anchor.id = "scroll-anchor";
+                        elements.chatMessages.appendChild(anchor);
+                        anchor.scrollIntoView({ behavior: "smooth" });
+                    });
+
+                });
+
+                return messageDiv.dataset.id;
+            }
+
+            // Remove message from chat by id
+            function removeMessage(id) {
+                const message = document.querySelector(`[data-id="${id}"]`);
+                if (message) message.remove();
+                elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+
+                // Remove any existing scroll anchor if present
+                const existingAnchor = document.getElementById("scroll-anchor");
+                if (existingAnchor) existingAnchor.remove();
+            }
+
+            // Initialization
+            const initialQuery = sessionStorage.getItem("initialQuery");
+
+            if (initialQuery) {
+                elements.initialIntro.classList.add("hidden");
+                elements.chatContainer.classList.remove("hidden");
+                elements.messageInput.value = initialQuery;
+                sessionStorage.removeItem("initialQuery");
+                handleSend(); // ✅ Send using the same logic as other inputs
+            } else {
+                elements.initialIntro.classList.remove("hidden");
+                elements.chatContainer.classList.add("hidden");
+                loadChatHistory();
+            }
+
+            updateSidebarHistory();
+        });
+    </script>
+</body>
+
+</html>

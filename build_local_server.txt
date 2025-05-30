@@ -1,0 +1,10 @@
+--- HOW TO BUILD LOCAL MONGODB SETUP FOR A FLASK APP ---
+
+First Go to :
+    C:\data\db
+        PC -> C -> DATA -> DB (DELETE All files and folders inside db)
+
+Then:
+    C:\Program Files\MongoDB\Server\8.0\bin
+        PC -> C -> PROGRAM FILES -> MONGODB -> SERVER -> 8.0 -> BIN 
+        now select address and write CMD , then in CMD write .\mongod

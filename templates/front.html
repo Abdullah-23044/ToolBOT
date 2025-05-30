@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolBOT</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/logo.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            background-color: var(--input-bg);
+            border-radius: 24px;
+            min-width: 660px;
+            max-width: 800px;
+            padding: 10px 15px;
+        }
+
+        .initial-greeting-text {
+            color: rgb(248, 250, 255);
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 24px;
+        }
+
+        #user-message-input {
+            flex-grow: 1;
+            border: none;
+            background-color: transparent;
+            color: var(--text-light-grey);
+            font-size: 16px;
+            outline: none;
+            padding: 6px 320px 50px 0px;
+            display: flex;
+            max-width: 100%;
+            text-align: left;
+            /* Ensure cursor starts at left */
+            padding-left: 12px;
+            /* Add some padding */
+        }
+
+        .initial-intro-section {
+            margin-bottom: -20px;
+        }
+
+        #welcome-chat-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="start">
+            <img class="logo" src="{{ url_for('static', filename='assets/logo.svg') }}" alt="ToolBOT Logo">
+            <h1 class="main-title-text">ToolBOT</h1>
+        </div>
+        <p class="main-tagline-text">Smarter Tool, Smarter Work</p>
+
+        <div id="dynamic-history-container">
+            <h5>History</h5>
+        </div>
+    </aside>
+
+
+    <main class="main-content">
+        <div id="welcome-chat-container">
+            <div id="initial-intro-section" class="initial-intro-section">
+                <div class="initial-logo-and-title">
+                    <img class="logo" src="{{ url_for('static', filename='assets/logo.svg') }}" alt="ToolBOT Logo">
+                    <h1 class="initial-intro-title">Hi, I'm ToolBOT</h1>
+                </div>
+                <p class="initial-greeting-text">How can I help you today?</p>
+            </div>
+
+            <div class="chat-input">
+                <!-- Replace this (around line 90): -->
+
+                <!-- With this: -->
+                <textarea id="user-message-input" placeholder="Message ToolBOT" rows="1" style="
+                    resize: none;
+                    width: 100%;
+                    min-height: 70px;
+                    overflow-y: hidden;
+                    border: none;
+                    background-color: transparent;
+                    color: var(--text-light-grey);
+                    font-size: 16px;
+                    outline: none;
+                    flex-grow: 1;
+                    padding: 5px 0;
+                    font-family: inherit;
+                "></textarea>
+                <div id="send-button" class="arrow">
+                    <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M7 16c-.595 0-1.077-.462-1.077-1.032V1.032C5.923.462 6.405 0 7 0s1.077.462 1.077 1.032v13.936C8.077 15.538 7.595 16 7 16z"
+                            fill="currentColor"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M.315 7.44a1.002 1.002 0 0 1 0-1.46L6.238.302a1.11 1.11 0 0 1 1.523 0c.421.403.421 1.057 0 1.46L1.838 7.44a1.11 1.11 0 0 1-1.523 0z"
+                            fill="currentColor"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M13.685 7.44a1.11 1.11 0 0 1-1.523 0L6.238 1.762a1.002 1.002 0 0 1 0-1.46 1.11 1.11 0 0 1 1.523 0l5.924 5.678c.42.403.42 1.056 0 1.46z"
+                            fill="currentColor"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-messages" class="hidden">
+        </div>
+    </main>
+
+    <!-- Add this script at the bottom of your existing front.html, before </body> -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('user-message-input');
+            const sendButton = document.getElementById('send-button');
+
+            // Auto-resize textarea
+            input.addEventListener('input', function () {
+                this.style.width = '100%';
+                if (this.scrollWidth > this.clientWidth) {
+                    this.style.height = 'auto';
+                    this.style.height = this.scrollHeight + 'px';
+                }
+            });
+
+            function handleSend() {
+                const query = input.value.trim();
+                if (query) {
+                    sessionStorage.setItem('initialQuery', query);
+                    window.location.href = "/chat_interface";
+                    input.value = ''; // Clear input
+                    input.style.height = '40px'; // Reset height
+                }
+            }
+
+            // Enter key support (prevent newline on Enter, allow Shift+Enter)
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                }
+            });
+
+            // Click event for send button
+            sendButton.addEventListener('click', handleSend);
+        });
+    </script>
+</body>
+
+</html>

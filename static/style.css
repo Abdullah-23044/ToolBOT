@@ -1,0 +1,561 @@
+/* style.css */
+
+/* Root variables for colors */
+:root {
+    --primary-blue: #3B82F6;
+    --dark-gray: #1F2937;
+    --medium-gray: #4B5563;
+    --light-gray: #D1D5DB;
+    --off-white: #F9FAFB;
+    --deep-dark-bg: #292a2d;
+    --sidebar-bg: #202124;
+    --input-bg: #404045;
+    --send-btn-bg: #4a4d52;
+    --send-btn-hover: #5a5d62;
+    --text-light-grey: #e0e0e0;
+    --text-soft-grey: #b0b0b0;
+    --thinking-bg: #40424a;
+    --history-header-color: #6B7280;
+    --history-item-hover-bg: #374151;
+    --status-bg: #fff3cd;
+    /* Light yellow for status messages */
+    --status-text: #856404;
+    /* Dark yellow text for status messages */
+}
+
+html,
+body {
+    height: 100%;
+    /* Ensure body takes full height */
+    overflow: hidden;
+    /* Prevent overall body scroll */
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", Oxygen, "Open Sans", sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--deep-dark-bg);
+    color: var(--text-light-grey);
+    display: flex;
+    /* This is good for sidebar and main content */
+}
+
+/* Welcome Screen Styling */
+.welcome-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    padding: 20px;
+}
+
+.welcome-subtitle {
+    color: var(--text-light-grey);
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.search-box {
+    display: flex;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+#welcome-input {
+    flex-grow: 1;
+    padding: 12px;
+    border-radius: 24px 0 0 24px;
+    border: none;
+    background-color: var(--input-bg);
+    color: var(--text-light-grey);
+}
+
+#welcome-send-button {
+    padding: 12px 20px;
+    border-radius: 0 24px 24px 0;
+    border: none;
+    background-color: var(--primary-blue);
+    color: white;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Left Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+    background-color: var(--sidebar-bg);
+    height: 100%;
+    padding: 0 10px 0 15px;
+    flex-shrink: 0;
+    border-right: 1px solid #4B5563;
+    overflow: hidden;
+    /* prevent overall scroll */
+}
+
+.sidebar-header {
+    flex-shrink: 0;
+    /* prevent resizing */
+    padding-top: 10px;
+    background-color: var(--sidebar-bg);
+    z-index: 1;
+    position: sticky;
+    top: 0;
+}
+
+.sidebar-history-scroll {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-top: 5px;
+    scrollbar-width: none;
+}
+
+.sidebar-history-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.history-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    /* space between sections */
+}
+
+.history-header {
+    color: var(--history-header-color);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.history-item {
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #d1d5db;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.history-item:hover {
+    background-color: var(--history-item-hover-bg);
+}
+
+
+.start {
+    display: flex;
+    align-items: center;
+    margin-top: -10px;
+}
+
+/* Right Main Content Area - CRITICAL CHANGES */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    /* Stack children vertically */
+    flex-grow: 1;
+    /* Allow it to take up all remaining horizontal space */
+    justify-content: flex-end;
+    /* Push content to the bottom (messages and input) */
+    align-items: center;
+    /* Keep chat input centered horizontally if it's not full width */
+    height: 100%;
+    /* Ensure it fills parent height vertically */
+    padding-top: 0;
+    /* Remove initial top padding if you want chat to start from the top within its area */
+    padding-bottom: 20px;
+    /* Add some padding at the bottom for the input area */
+    overflow: hidden;
+    /* Ensure only its children scroll, not the main-content itself */
+    position: relative;
+    /* Needed for absolute positioning of input area if you choose that */
+}
+
+/* --- Main "ToolBot" title and tagline (LEFT ALIGNED) --- */
+.main-title-text {
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    color: rgb(245, 245, 245);
+    font-size: 24px;
+    line-height: normal;
+    text-align: left;
+    margin-left: 8px;
+}
+
+.main-tagline-text {
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    font-style: italic;
+    color: #fff;
+    font-size: 13px;
+    text-align: left;
+    margin-top: -20px;
+    margin-left: 45px;
+    margin-bottom: 24px;
+}
+
+.initial-intro-section {
+    /* This section is primarily for the "Hi, I'm ToolBOT" initial screen */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    max-width: 600px;
+    /* Keep this for content width */
+    flex-grow: 1;
+    /* Allow it to take up available space when visible */
+    margin-bottom: 20px;
+    /* Space between intro and input */
+    padding-top: 50px;
+    /* Example: push down a bit from the top of main-content */
+}
+
+.initial-intro-section.hidden {
+    display: none;
+}
+
+.logo {
+    width: 42px;
+}
+
+.initial-logo-and-title {
+    display: flex;
+    align-items: center;
+}
+
+.initial-logo-placeholder {
+    font-size: 2.5em;
+    margin-right: 15px;
+    color: #4a90e2;
+}
+
+.initial-intro-title {
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    color: #fff;
+    padding: 26px 20px 10px 20px;
+    font-weight: 500;
+    margin-top: -16px;
+    margin-bottom: 0;
+    font-size: 25px;
+}
+
+
+/* Chat messages container */
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* Make it fill available space above the input */
+    width: 100%;
+    /* Take full width of its parent (.main-content) */
+    max-width: 800px;
+    /* Max width for readability, adjust as needed */
+    overflow: hidden;
+    /* Enable scrolling for chat messages */
+    padding: 0 20px;
+    /* Add horizontal padding for messages */
+    box-sizing: border-box;
+    /* Include padding in width */
+    margin-bottom: 10px;
+    /* Space between messages and input */
+}
+
+#chat-container.hidden {
+    display: none;
+    /* Make sure this is hidden by default if initial intro is shown */
+}
+
+/* Hide scrollbars but keep functionality */
+#chat-container,
+.sidebar {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+#chat-container::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari/Opera */
+}
+
+/* Optional: Keep some space for scrolling */
+#chat-container {
+    padding-right: 20px;
+    /* Prevents content from touching edge */
+    margin-right: -20px;
+    /* Compensates for padding */
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 20px;
+    overflow-anchor: none;
+    flex-grow: 1;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    max-height: 100%;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.chat-messages::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+/* Message styling - Uncommented and adjusted these for proper chat bubbles */
+.message {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 70%;
+}
+
+/* .message .sender {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--text-soft-grey); A bit softer for sender name
+    font-size: 0.9em;
+} */
+
+.message .content {
+    /* This div holds the actual text, no padding or background here as it's handled by parent .message */
+    padding: 0;
+    border-radius: 0;
+    max-width: 100%;
+    /* Ensure content doesn't overflow its parent message bubble */
+    word-wrap: break-word;
+}
+
+.user-message {
+    align-self: flex-end;
+    /* Push to right */
+    background-color: var(--input-bg);
+    /* Optional: Add subtle background */
+    border-radius: 18px 18px 4px 18px;
+    /* Rounded corners (top-left, top-right, bottom-left, bottom-right) */
+    margin-left: auto;
+    /* Ensure it stays right-aligned */
+    margin-top: 15px;
+    margin-right: 3px;
+}
+
+.gemini-message {
+    align-self: flex-start;
+    /* Keep left-aligned */
+    border-radius: 18px 18px 18px 4px;
+    /* Rounded corners (mirror user message) */
+}
+
+/* Ensure the input box stays visible */
+.chat-input {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 100;
+    background-color: var(--input-bg);
+    border-radius: 24px;
+    width: 60%;
+    max-width: 800px;
+    padding: 10px 15px;
+    margin: 20px 0;
+
+    /* Add margin to avoid overlap */
+    @media (max-width: 768px) {
+        .chat-input {
+            width: 95%;
+            /* Even wider on mobile */
+            max-width: 100%;
+        }
+    }
+}
+
+#user-message-input {
+    /* Use the ID for the input field itself */
+    flex-grow: 1;
+    border: none;
+    background-color: transparent;
+    color: var(--text-light-grey);
+    font-size: 16px;
+    outline: none;
+    padding: 5px 0;
+    text-align: left;
+    /* Ensure cursor starts at left */
+    padding-left: 12px;
+    /* Add some padding */
+}
+
+/* Placeholder text color */
+#user-message-input::placeholder {
+    color: #a0a0a0;
+    opacity: 0.8;
+}
+
+#send-button {
+    /* Use the ID for the send button */
+    color: #fff;
+    /* White arrow color */
+    background-color: var(--primary-blue);
+    /* A clear color for the send button */
+    min-width: 40px;
+    /* Fixed width for circular button */
+    height: 40px;
+    /* Fixed height for circular button */
+    border-radius: 50%;
+    /* Make it circular */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    margin-left: 10px;
+    /* Space between input and button */
+}
+
+#send-button:hover {
+    background-color: #2a69d6;
+    /* Darker blue on hover */
+    transform: scale(1.05);
+    /* Slightly enlarge on hover */
+}
+
+#send-button:active {
+    transform: scale(0.95);
+    /* Slightly shrink when clicked */
+}
+
+.status-message {
+    background-color: var(--status-bg);
+    color: var(--status-text);
+    text-align: center;
+    align-self: center;
+    max-width: 100%;
+    font-size: 14px;
+    font-style: italic;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.thinking-message .content {
+    display: flex;
+    justify-content: left;
+    padding: 10px 15px;
+    gap: 4px;
+}
+
+.thinking-message .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--text-light-grey);
+    /* The actual dot color */
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+    margin: 0 2px;
+}
+
+.thinking-message .dot:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.thinking-message .dot:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+.thinking-message .dot:nth-child(3) {
+    animation-delay: 0s;
+}
+
+/* Highlight effect for selected chat message */
+.message.highlighted {
+    background-color: #3f4044;
+    /* A lighter black-gray tone */
+    box-shadow: 0 0 0 2px #5a5a5a;
+}
+
+
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    body {
+        /* Changed from .main-layout */
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid #4B5563;
+        padding-bottom: 16px;
+    }
+
+    .main-content {
+        height: auto;
+        padding-top: 16px;
+    }
+
+    #chat-container {
+        /* Adjusted chat container height for mobile */
+        height: 60vh;
+        max-width: 100%;
+        /* Allow chat container to use full width on mobile */
+        padding: 0 10px;
+        overflow-y: scroll;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hide the scroll anchor element */
+    #scroll-anchor {
+        height: 1px;
+        width: 100%;
+        visibility: hidden;
+    }
+
+    .initial-intro-title {
+        font-size: 32px;
+    }
+}
